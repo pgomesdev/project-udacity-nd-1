@@ -1,16 +1,39 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
-import BookShelf from './components/BookShelf';
+import BookList from './components/BookList';
+import * as BooksAPI from './BooksAPI';
 
-class BookList extends Component {
-  static propTypes = {
-    books: PropTypes.array.isRequired,
-    onShelfChange: PropTypes.func.isRequired,
+class BookShelf extends Component {
+  state = {
+    books: []
+  }
+
+  getBooks = () => {
+    BooksAPI.getAll()
+      .then(books => {
+        this.setState(() => ({
+          books
+        }))
+      })
+      .catch(err => {
+        console.error('An error, ocurred ', err);
+      });
+  };
+
+  handleBookshelfChange = (book, shelf) => {
+    BooksAPI.update(book, shelf)
+      .then(response => {
+        this.getBooks();
+      })
+      .catch(console.error);
+  }
+
+  componentDidMount() {
+    this.getBooks();
   }
 
   render() {
-    const { books, onShelfChange } = this.props;
+    const { books } = this.state;
 
     return (
       <div className="list-books">
@@ -21,23 +44,23 @@ class BookList extends Component {
           <div>
             <div className="bookshelf">
               <h2 className="bookshelf-title">Currently Reading</h2>
-              <BookShelf
+              <BookList
                 books={books.filter(book => book.shelf === 'currentlyReading')}
-                onShelfChange={onShelfChange}
+                onShelfChange={this.handleBookshelfChange}
               />
             </div>
             <div className="bookshelf">
               <h2 className="bookshelf-title">Want to Read</h2>
-              <BookShelf
+              <BookList
                 books={books.filter(book => book.shelf === 'wantToRead')}
-                onShelfChange={onShelfChange}
+                onShelfChange={this.handleBookshelfChange}
               />
             </div>
             <div className="bookshelf">
               <h2 className="bookshelf-title">Read</h2>
-              <BookShelf
+              <BookList
                 books={books.filter(book => book.shelf === 'read')}
-                onShelfChange={onShelfChange}
+                onShelfChange={this.handleBookshelfChange}
               />
             </div>
           </div>
@@ -52,5 +75,5 @@ class BookList extends Component {
   }
 }
 
-export default BookList;
+export default BookShelf;
 
