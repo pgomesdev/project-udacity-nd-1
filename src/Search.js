@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { DebounceInput } from 'react-debounce-input';
 import BookList from './components/BookList';
 import * as BooksAPI from './BooksAPI';
 
@@ -29,11 +30,21 @@ class Search extends Component {
     if (query) {
       BooksAPI.search(query)
       .then(books => {
-        this.setState(() => ({
-          books
-        }));
+        if (!books.error) {
+          this.setState(() => ({
+            books
+          }));
+        } else {
+          this.setState(() => ({
+            books: []
+          }));
+        }
       })
-      .catch(console.error);
+      .catch(err => {
+        this.setState(() => ({
+          books: []
+        }));
+      });
     } else {
       this.setState(() => ({
         books: []
@@ -41,13 +52,9 @@ class Search extends Component {
     }
   }
 
-  componentDidMount() {
-    const { query } = this.state;
-
-    this.searchBooks(query);
-  }
-
   render() {
+    const { query, books } = this.state;
+
     return (
       <div className="search-books">
         <div className="search-books-bar">
@@ -56,18 +63,19 @@ class Search extends Component {
             className="close-search"
           >Close</Link>
           <div className="search-books-input-wrapper">
-            <input
+            <DebounceInput
               type="text"
+              debounceTimeout={300}
               placeholder="Search by title or author"
               onChange={e => this.handleQueryChange(e.target.value)}
-              value={this.state.query}
+              value={query}
             />
           </div>
         </div>
         <div className="search-books-results">
           <ol className="books-grid">
             <BookList
-              books={this.state.books}
+              books={books}
               onShelfChange={this.handleBookshelfChange}
             />
           </ol>
