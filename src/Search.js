@@ -11,11 +11,19 @@ class Search extends Component {
   }
 
   handleBookshelfChange = (book, shelf) => {
+    const { books } = this.state;
+
     BooksAPI.update(book, shelf)
       .then(response => {
-        this.searchBooks(this.state.query);
-      })
-      .catch(console.error);
+        // Locate the id to update the current shelf in the search page
+        const bookPos = books.findIndex(b => b.id === book.id);
+
+        books[bookPos].shelf = shelf;
+
+        this.setState(() => ({
+          books
+        }));
+      });
   }
 
   handleQueryChange = async (query) => {

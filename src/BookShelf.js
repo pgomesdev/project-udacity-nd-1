@@ -21,9 +21,18 @@ class BookShelf extends Component {
   };
 
   handleBookshelfChange = (book, shelf) => {
+    const { books } = this.state;
+    
     BooksAPI.update(book, shelf)
       .then(response => {
-        this.getBooks();
+        // Locate the id to update the current shelf in the shelf page
+        const bookPos = books.findIndex(b => b.id === book.id);
+
+        books[bookPos].shelf = shelf;
+
+        this.setState(() => ({
+          books
+        }));
       })
       .catch(console.error);
   }
